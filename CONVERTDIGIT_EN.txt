@@ -1,0 +1,164 @@
+CREATE OR REPLACE FUNCTION MRG.CONVERTDIGIT_EN (STR IN  VARCHAR2) RETURN VARCHAR2 IS
+   RIAL     VARCHAR2(200);
+   STR1     VARCHAR2(200);
+   STR2     VARCHAR2(200);
+   STR3     VARCHAR2(200);
+   S1       VARCHAR2(1);
+   S2       VARCHAR2(1);
+   S3       VARCHAR2(1);
+   V_GAP    VARCHAR2(5):= ' AND ';
+   V_DIGIT  NUMBER;
+   V_RESULT VARCHAR2(32767); 
+
+BEGIN
+
+    V_DIGIT := REGEXP_REPLACE(STR,'[a-z,A-Z,~!@#$%^&*()_+/.<>{}]');
+    
+	-- generate by credit group
+	S1 := SUBSTR(LTRIM(RTRIM(V_DIGIT)),3,1);
+	S2 := SUBSTR(LTRIM(RTRIM(V_DIGIT)),2,1);
+	S3 := SUBSTR(LTRIM(RTRIM(V_DIGIT)),1,1); 
+	
+	
+
+IF  S1 IS NULL THEN          -- No three digits
+        
+        IF  S2 IS NULL THEN  -- One digit numbers
+        
+                IF     S3 = 1 THEN STR1 := ' One' ; --  One digit numbers
+                ELSIF  S3 = 2 THEN STR1 := ' Two' ;
+                ELSIF  S3 = 3 THEN STR1 := ' Three' ;
+                ELSIF  S3 = 4 THEN STR1 := ' Four' ;
+                ELSIF  S3 = 5 THEN STR1 := ' Five' ;
+                ELSIF  S3 = 6 THEN STR1 := ' Six' ;
+                ELSIF  S3 = 7 THEN STR1 := ' Seven' ;
+                ELSIF  S3 = 8 THEN STR1 := ' Eight' ;
+                ELSIF  S3 = 9 THEN STR1 := ' Nine' ;
+                ELSIF  S3 = 0 THEN STR1 := ' ' ;  --  When all three digits are zero
+                END IF;
+                
+                V_RESULT := STR1;
+        ELSE                 --  Two-Digit numbers
+        
+                IF  S3 = 1 THEN                  -- Two-Digit numbers below 20
+                            IF    S2 = 0 THEN STR2 := 'Ten' ;
+                            ELSIF S2 = 1 THEN STR2 := 'Evelen' ; 
+                            ELSIF S2 = 2 THEN STR2 := 'Twelve' ;
+                            ELSIF S2 = 3 THEN STR2 := 'Thirteen' ;
+                            ELSIF S2 = 4 THEN STR2 := 'Fourteen' ;
+                            ELSIF S2 = 5 THEN STR2 := 'Fifteen' ;
+                            ELSIF S2 = 6 THEN STR2 := 'Sisxteen' ;
+                            ELSIF S2 = 7 THEN STR2 := 'Seventeen' ;
+                            ELSIF S2 = 8 THEN STR2 := 'Eighteen' ;
+                            ELSIF S2 = 9 THEN STR2 := 'Nineteen' ;
+                            END IF;
+                            
+                V_RESULT := STR2;
+                
+                ELSIF  S3 > 1 THEN                  -- Two-Digit numbers greater than 20
+                            IF    S3 = 2 THEN STR2 := 'Twenty' ; 
+                            ELSIF S3 = 3 THEN STR2 := 'Thirty'  ;
+                            ELSIF S3 = 4 THEN STR2 := 'foutry'  ;
+                            ELSIF S3 = 5 THEN STR2 := 'Fifty'  ;
+                            ELSIF S3 = 6 THEN STR2 := 'Sixty'  ;
+                            ELSIF S3 = 7 THEN STR2 := 'Seventy'  ;
+                            ELSIF S3 = 8 THEN STR2 := 'Eighty'  ;
+                            ELSIF S3 = 9 THEN STR2 := 'Ninety'  ;
+                            END IF;
+                            IF S2 = 0 THEN
+                                V_RESULT := STR2 ;     
+                            ELSE     
+                
+                            IF     S2 = 1 THEN STR1 := ' One'  ;--  Single digit of two numbers
+                            ELSIF  S2 = 2 THEN STR1 := ' Two' ;
+                            ELSIF  S2 = 3 THEN STR1 := ' Three' ;
+                            ELSIF  S2 = 4 THEN STR1 := ' Four' ;
+                            ELSIF  S2 = 5 THEN STR1 := ' Five' ;
+                            ELSIF  S2 = 6 THEN STR1 := ' Six' ;
+                            ELSIF  S2 = 7 THEN STR1 := ' Seven' ;
+                            ELSIF  S2 = 8 THEN STR1 := ' Eight' ;
+                            ELSIF  S2 = 9 THEN STR1 := ' Nine' ;
+                            ELSE
+                                    V_RESULT := STR2  ;
+                            END IF;
+                V_RESULT := STR2 || STR1;  
+                            END IF;          
+                END IF;        
+        END IF;
+ELSE            -- Three-Digit numbers
+
+        IF    S3 = 1 THEN STR3 := 'One Hundred' ; 
+        ELSIF S3 = 2 THEN STR3 := 'Two Hundred';   -- The number of hundreds
+        ELSIF S3 = 3 THEN STR3 := 'Three Hundred';
+        ELSIF S3 = 4 THEN STR3 := 'Four Hundred';
+        ELSIF S3 = 5 THEN STR3 := 'Five Hundred';
+        ELSIF S3 = 6 THEN STR3 := 'Six Hundred';
+        ELSIF S3 = 7 THEN STR3 := 'Seven Hundred';
+        ELSIF S3 = 8 THEN STR3 := 'Eight Hundred';
+        ELSIF S3 = 9 THEN STR3 := 'Nine Hundred';
+        END IF;
+        
+        IF S2 = 0 AND S1 = 0 THEN 
+        
+            V_RESULT := STR3; 
+        ELSE   
+                IF  S2 = 1 THEN            -- Two-Digit numbers below 20
+                            IF    S1 = 0 THEN STR2 := 'Ten'; 
+                            ELSIF S1 = 1 THEN STR2 := 'Evelen' ; 
+                            ELSIF S1 = 2 THEN STR2 := 'Twelve' ;
+                            ELSIF S1 = 3 THEN STR2 := 'Thirteen' ;
+                            ELSIF S1 = 4 THEN STR2 := 'Fourteen' ;
+                            ELSIF S1 = 5 THEN STR2 := 'Fifteen' ;
+                            ELSIF S1 = 6 THEN STR2 := 'Sisxteen' ;
+                            ELSIF S1 = 7 THEN STR2 := 'Seventy' ;
+                            ELSIF S1 = 8 THEN STR2 := 'Eighty' ;
+                            ELSIF S1 = 9 THEN STR2 := 'Nineteen' ;   
+                            END IF;
+                V_RESULT := STR3 || V_GAP || STR2;
+                            
+                ELSIF  S2 > 1  THEN  
+                            IF    S2 = 2  THEN STR2 := 'Twenty';  -- Two-Digit numbers greater than 20
+                            ELSIF S2 = 3  THEN STR2 := 'Thirty';   
+                            ELSIF S2 = 4  THEN STR2 := 'foutry';
+                            ELSIF S2 = 5  THEN STR2 := 'Fifty';
+                            ELSIF S2 = 6  THEN STR2 := 'Sixty';
+                            ELSIF S2 = 7  THEN STR2 := 'Seventy';
+                            ELSIF S2 = 8  THEN STR2 := 'Eighty';
+                            ELSIF S2 = 9  THEN STR2 := 'Ninety';      
+                            END IF;  
+                            IF    S1 = 0 THEN      
+                                        V_RESULT := STR3 || V_GAP ||  STR2;       
+                            ELSE               
+                                       -- Single digit
+                                IF    S1 = 1 THEN  STR1 := ' One' ;
+                                ELSIF S1 = 2 THEN  STR1 := ' Two' ;
+                                ELSIF S1 = 3 THEN STR1 := ' Three' ;
+                                ELSIF S1 = 4 THEN STR1 := ' Four' ;
+                                ELSIF S1 = 5 THEN STR1 := ' Five' ;
+                                ELSIF S1 = 6 THEN STR1 := ' Six' ;
+                                ELSIF S1 = 7 THEN STR1 := ' Seven' ;
+                                ELSIF S1 = 8 THEN STR1 := ' Eight' ;
+                                ELSIF S1 = 9 THEN STR1 := ' Nine' ;          
+                                END IF;
+                                   
+                            V_RESULT := STR3 || V_GAP || STR2 || STR1 ;      
+                            END IF;      
+                ELSIF  S2 = 0 THEN  
+                            IF    S1 = 1 THEN STR1 := ' One' ;
+                            ELSIF S1 = 2 THEN STR1 := ' Two' ;
+                            ELSIF S1 = 3 THEN STR1 := ' Three' ;
+                            ELSIF S1 = 4 THEN STR1 := ' Four' ;
+                            ELSIF S1 = 5 THEN STR1 := ' Five' ;
+                            ELSIF S1 = 6 THEN STR1 := ' Six' ;
+                            ELSIF S1 = 7 THEN STR1 := ' Seven' ;
+                            ELSIF S1 = 8 THEN STR1 := ' Eight' ;
+                            ELSIF S1 = 9 THEN STR1 := ' Nine' ;          
+                            END IF;       
+                V_RESULT := STR3 || V_GAP || STR1  ;  -- The number of tens is equal to zero           
+                              
+                END IF;                                    
+            END IF;                                     
+END IF;         
+    RETURN V_RESULT ;
+END;
+/

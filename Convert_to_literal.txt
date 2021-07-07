@@ -1,0 +1,25 @@
+CREATE OR REPLACE FUNCTION MRG.CONVERT_TO_LITRERAL(V_NUM IN VARCHAR2,LANG IN VARCHAR2 DEFAULT 'FA')
+RETURN VARCHAR2
+AS
+
+/*
+  Authors:
+        -   Mrs. ROYA   JAFARI
+        -   Mr.  SAJJAD Ghanbari
+  Date produced:
+       -    2021/07/07
+  Target:
+       - This function converts digit(integer/float) to literal.
+         Constraint in integer is 24 digits and in float is 3 digit after point.
+*/
+ 
+BEGIN
+
+    IF LANG = 'FA' THEN
+        RETURN CONVERT_TO_LITRERAL_FA(V_NUM);
+    ELSE
+        RETURN CONVERT_TO_LITRERAL_EN(V_NUM);
+    END IF;
+      
+END;
+/

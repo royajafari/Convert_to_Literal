@@ -1,0 +1,178 @@
+CREATE OR REPLACE FUNCTION MRG.CONVERT_TO_LITRERAL_EN(V_NUM IN VARCHAR2)
+RETURN VARCHAR2
+AS
+STR         VARCHAR2(1000);
+V_RESULT    VARCHAR2(32767);
+GAP         VARCHAR2(5);
+V_SIGN      VARCHAR2(10);
+V_FLOAT     NUMBER;
+V_LENGHT    NUMBER;
+V_BATCH     NUMBER;
+V_RESULT_T  VARCHAR2(32767):=null;
+V_3_SUB     VARCHAR2(10);
+I           NUMBER := 1;
+V_INPUT     VARCHAR2(32767);
+V_DIGIT     NUMBER;
+K           NUMBER;
+FLOAT_LEN   NUMBER;
+V_RESULT_F  VARCHAR2(32767);
+STR_F       VARCHAR2(1000);
+GAP_NULL    NUMBER:= 0;
+M           NUMBER:= 0;
+V_NUM1      VARCHAR2(32767);
+ 
+BEGIN
+
+IF LENGTH(V_NUM) > 0 THEN
+
+  STR := V_NUM;
+  GAP := ' AND ';
+  K   := 0;
+  
+  -- Negative Checking
+  IF SUBSTR(V_NUM,1,1) = '-' THEN 
+    V_SIGN := 'Negative ';
+  ELSE 
+    V_SIGN := '';
+  END IF;
+  
+   V_NUM1  := SUBSTR(V_NUM,1,INSTR(V_NUM,'.',1))||REPLACE(SUBSTR(V_NUM,INSTR(V_NUM,'.',1)+1,LENGTH(V_NUM)),'.','');
+   V_DIGIT := REGEXP_REPLACE(V_NUM1,'[a-z,A-Z,~!@#$%^&*()_,+/\<>{} ,-]');
+   V_DIGIT := ABS(V_DIGIT);
+   
+   IF (V_DIGIT - floor(V_DIGIT)) = 0 THEN 
+      V_FLOAT := 0;      -- The number is integer
+   ELSE  
+      V_FLOAT := 1;     -- Is a decimal number
+   END IF;
+
+   IF V_FLOAT = 1 THEN  -- decimal number
+
+   FLOAT_LEN    := length(substr(V_DIGIT - floor(V_DIGIT),2,3));
+   V_RESULT_F   := CONVERTDIGIT_EN (substr(V_DIGIT - floor(V_DIGIT),2,3));
+   IF FLOAT_LEN = 1 then
+     STR_F := ' Thenth ';
+   ELSIF FLOAT_LEN = 2 then
+     STR_F := ' Hundredth ';
+   ELSIF FLOAT_LEN = 3 then
+     STR_F := ' Thousandth ';  
+   END IF; 
+   V_RESULT_F := V_RESULT_F || STR_F; 
+   END IF;
+   
+-- Integer
+
+    V_DIGIT  := FLOOR(V_DIGIT); -- part integer part
+    V_LENGHT := LENGTH(V_DIGIT); 
+    V_BATCH  := CEIL(LENGTH(V_DIGIT)/3);
+      
+ IF V_BATCH <= 1 THEN      -- Three-digit numbers and less
+ 
+    V_RESULT := CONVERTDIGIT_EN (V_DIGIT);
+    V_RESULT_T := V_RESULT_T || V_RESULT;
+
+ ELSE          -- Numbers above three digits
+ 
+    V_INPUT :=  V_DIGIT || '';
+    K       :=  0;
+    
+     
+    for j in reverse 1 .. V_BATCH 
+    LOOP 
+      
+     exit when V_BATCH < 1;
+         
+     SELECT REVERSE(SUBSTR(REVERSE(V_INPUT),I,3)) 
+     INTO   V_3_SUB 
+     FROM   DUAL ;
+     K := K + 1; 
+
+
+    IF V_3_SUB = 000   THEN
+       GAP_NULL := 1;
+       M        := M + 1;
+    ELSE
+       GAP_NULL := 0;
+       M        := M - 1;
+       IF M <= 0 THEN M := 0; END IF;
+    END IF;
+        
+    IF GAP_NULL = 1 THEN
+         gap := '';
+    ELSE
+         gap := ' AND ';
+    END IF; 
+
+       
+    
+    IF (K = 1) THEN
+        STR := '';
+    END IF;
+    
+    IF (K = 2) THEN
+     
+        STR := ' Thousands '; 
+
+    END IF;
+
+    IF (K = 3) THEN
+         STR := ' Millions ' ;
+    END IF;
+    
+    IF (K = 4) THEN
+       STR := ' Billions ';
+    END IF;
+    
+    IF (K = 5) THEN
+       STR := ' Thousands Millions ';
+    END IF;  
+
+    IF (K = 6) THEN
+       STR := ' Thousands Billions ';
+    END IF;   
+    
+    IF (K = 7) THEN
+       STR := ' Millions Millions ';
+    END IF;     
+      
+    IF (K = 8) THEN
+       STR := ' Millions Billions ';
+    END IF;         
+
+    
+    IF GAP_NULL = 1  THEN
+         STR := ''; 
+    END IF;
+ 
+
+          
+    V_BATCH    :=  V_BATCH - 1 ;
+    I:= I + 3;
+    
+    V_RESULT   :=  CONVERTDIGIT_EN ( V_3_SUB ) || str ;
+    V_RESULT_T :=  gap ||V_RESULT || V_RESULT_T  ;
+     
+    END LOOP;
+   V_RESULT_T :=substr((V_RESULT_T),6,length(V_RESULT_T)); 
+   
+END IF;
+
+
+
+IF V_FLOAT = 0 THEN    
+        RETURN  V_SIGN||V_RESULT_T;
+ELSE
+     IF V_RESULT_T is null THEN
+         RETURN  V_SIGN||V_RESULT_F;
+     ELSE 
+         RETURN  V_SIGN||V_RESULT_T ||gap|| V_RESULT_F;  
+     END IF;
+END IF;
+ 
+ELSE
+ 
+ RETURN NULL;
+
+END IF;       
+END;
+/

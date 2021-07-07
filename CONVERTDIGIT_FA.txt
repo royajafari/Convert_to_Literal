@@ -1,0 +1,164 @@
+CREATE OR REPLACE FUNCTION MRG.CONVERTDIGIT_FA (STR IN  VARCHAR2) RETURN VARCHAR2 IS
+   RIAL     VARCHAR2(200);
+   STR1     VARCHAR2(200);
+   STR2     VARCHAR2(200);
+   STR3     VARCHAR2(200);
+   S1       VARCHAR2(1);
+   S2       VARCHAR2(1);
+   S3       VARCHAR2(1);
+   V_GAP    VARCHAR2(5):= ' و ';
+   V_DIGIT  NUMBER;
+   V_RESULT VARCHAR2(32767); 
+
+BEGIN
+
+    V_DIGIT := REGEXP_REPLACE(STR,'[a-z,A-Z,~!@#$%^&*()_+/.<>{}]');
+    
+	-- generate by credit group
+	S1 := SUBSTR(LTRIM(RTRIM(V_DIGIT)),3,1);
+	S2 := SUBSTR(LTRIM(RTRIM(V_DIGIT)),2,1);
+	S3 := SUBSTR(LTRIM(RTRIM(V_DIGIT)),1,1); 
+	
+	
+
+IF  S1 IS NULL THEN          -- سه رقمي نيست
+        
+        IF  S2 IS NULL THEN  -- اعداد يک رقمي
+        
+                IF     S3 = 1 THEN STR1 := 'يک' ; --  اعداد يک رقمي
+                ELSIF  S3 = 2 THEN STR1 := 'دو' ;
+                ELSIF  S3 = 3 THEN STR1 := 'سه' ;
+                ELSIF  S3 = 4 THEN STR1 := 'چهار' ;
+                ELSIF  S3 = 5 THEN STR1 := 'پنج' ;
+                ELSIF  S3 = 6 THEN STR1 := 'شش' ;
+                ELSIF  S3 = 7 THEN STR1 := 'هفت' ;
+                ELSIF  S3 = 8 THEN STR1 := 'هشت' ;
+                ELSIF  S3 = 9 THEN STR1 := 'نه' ;
+                ELSIF  S3 = 0 THEN STR1 := '' ;  --  وقتي هر سه رقم صفر باشد
+                END IF;
+                
+                V_RESULT := STR1;
+        ELSE                 --  اعداد دو رقمي
+        
+                IF  S3 = 1 THEN                  -- اعداد دو رقمي زير 20
+                            IF    S2 = 0 THEN STR2 := 'ده' ;
+                            ELSIF S2 = 1 THEN STR2 := 'يازده' ; 
+                            ELSIF S2 = 2 THEN STR2 := 'دوازده' ;
+                            ELSIF S2 = 3 THEN STR2 := 'سيزده' ;
+                            ELSIF S2 = 4 THEN STR2 := 'چهارده' ;
+                            ELSIF S2 = 5 THEN STR2 := 'پانزده' ;
+                            ELSIF S2 = 6 THEN STR2 := 'شانزده' ;
+                            ELSIF S2 = 7 THEN STR2 := 'هفده' ;
+                            ELSIF S2 = 8 THEN STR2 := 'هيجده' ;
+                            ELSIF S2 = 9 THEN STR2 := 'نوزده' ;
+                            END IF;
+                            
+                V_RESULT := STR2;
+                
+                ELSIF  S3 > 1 THEN                  -- اعداد دو رقمي بزرگتر از  20
+                            IF    S3 = 2 THEN STR2 := 'بيست' ; 
+                            ELSIF S3 = 3 THEN STR2 := 'سي'  ;
+                            ELSIF S3 = 4 THEN STR2 := 'چهل'  ;
+                            ELSIF S3 = 5 THEN STR2 := 'پنجاه'  ;
+                            ELSIF S3 = 6 THEN STR2 := 'شصت'  ;
+                            ELSIF S3 = 7 THEN STR2 := 'هفتاد'  ;
+                            ELSIF S3 = 8 THEN STR2 := 'هشتاد'  ;
+                            ELSIF S3 = 9 THEN STR2 := 'نود'  ;
+                            END IF;
+                            IF S2 = 0 THEN
+                                V_RESULT := STR2 ;     
+                            ELSE     
+                
+                            IF     S2 = 1 THEN STR1 := 'يک'  ;--  رقم يکان اعداد دورقمي
+                            ELSIF  S2 = 2 THEN STR1 := 'دو' ;
+                            ELSIF  S2 = 3 THEN STR1 := 'سه' ;
+                            ELSIF  S2 = 4 THEN STR1 := 'چهار' ;
+                            ELSIF  S2 = 5 THEN STR1 := 'پنج' ;
+                            ELSIF  S2 = 6 THEN STR1 := 'شش' ;
+                            ELSIF  S2 = 7 THEN STR1 := 'هفت' ;
+                            ELSIF  S2 = 8 THEN STR1 := 'هشت' ;
+                            ELSIF  S2 = 9 THEN STR1 := 'نه' ;
+                            ELSE
+                                    V_RESULT := STR2  ;
+                            END IF;
+                V_RESULT := STR2 || V_GAP || STR1;  
+                            END IF;          
+                END IF;        
+        END IF;
+ELSE            -- اعداد سه رقمي
+
+        IF    S3 = 1 THEN STR3 := 'صد' ; 
+        ELSIF S3 = 2 THEN STR3 := 'دويست';   -- رقم صدگان
+        ELSIF S3 = 3 THEN STR3 := 'سيصد';
+        ELSIF S3 = 4 THEN STR3 := 'چهارصد';
+        ELSIF S3 = 5 THEN STR3 := 'پانصد';
+        ELSIF S3 = 6 THEN STR3 := 'ششصد';
+        ELSIF S3 = 7 THEN STR3 := 'هفتصد';
+        ELSIF S3 = 8 THEN STR3 := 'هشتصد';
+        ELSIF S3 = 9 THEN STR3 := 'نهصد';
+        END IF;
+        
+        IF S2 = 0 AND S1 = 0 THEN 
+        
+            V_RESULT := STR3; 
+        ELSE   
+                IF  S2 = 1 THEN            -- اعداد دو رقمي زير 20
+                            IF    S1 = 0 THEN STR2 := 'ده'; 
+                            ELSIF S1 = 1 THEN STR2 := 'يازده' ; 
+                            ELSIF S1 = 2 THEN STR2 := 'دوازده' ;
+                            ELSIF S1 = 3 THEN STR2 := 'سيزده' ;
+                            ELSIF S1 = 4 THEN STR2 := 'چهارده' ;
+                            ELSIF S1 = 5 THEN STR2 := 'پانزده' ;
+                            ELSIF S1 = 6 THEN STR2 := 'شانزده' ;
+                            ELSIF S1 = 7 THEN STR2 := 'هفده' ;
+                            ELSIF S1 = 8 THEN STR2 := 'هيجده' ;
+                            ELSIF S1 = 9 THEN STR2 := 'نوزده' ;   
+                            END IF;
+                V_RESULT := STR3 || V_GAP || STR2;
+                            
+                ELSIF  S2 > 1  THEN  
+                            IF    S2 = 2  THEN STR2 := 'بيست';  -- اعداد دو رقمي بزرگتر از 20
+                            ELSIF S2 = 3  THEN STR2 := 'سي';   
+                            ELSIF S2 = 4  THEN STR2 := 'چهل';
+                            ELSIF S2 = 5  THEN STR2 := 'پنجاه';
+                            ELSIF S2 = 6  THEN STR2 := 'شصت';
+                            ELSIF S2 = 7  THEN STR2 := 'هفتاد';
+                            ELSIF S2 = 8  THEN STR2 := 'هشتاد';
+                            ELSIF S2 = 9  THEN STR2 := 'نود';      
+                            END IF;  
+                            IF    S1 = 0 THEN      
+                                        V_RESULT := STR3 || V_GAP ||  STR2;       
+                            ELSE               
+                                       -- رقم يکان      
+                                IF    S1 = 1 THEN  STR1 := 'يک' ;
+                                ELSIF S1 = 2 THEN  STR1 := 'دو' ;
+                                ELSIF S1 = 3 THEN STR1 := 'سه' ;
+                                ELSIF S1 = 4 THEN STR1 := 'چهار' ;
+                                ELSIF S1 = 5 THEN STR1 := 'پنج' ;
+                                ELSIF S1 = 6 THEN STR1 := 'شش' ;
+                                ELSIF S1 = 7 THEN STR1 := 'هفت' ;
+                                ELSIF S1 = 8 THEN STR1 := 'هشت' ;
+                                ELSIF S1 = 9 THEN STR1 := 'نه' ;          
+                                END IF;
+                                   
+                            V_RESULT := STR3 || V_GAP || STR2 || V_GAP || STR1 ;      
+                            END IF;      
+                ELSIF  S2 = 0 THEN  
+                            IF    S1 = 1 THEN STR1 := 'يک' ;
+                            ELSIF S1 = 2 THEN STR1 := 'دو' ;
+                            ELSIF S1 = 3 THEN STR1 := 'سه' ;
+                            ELSIF S1 = 4 THEN STR1 := 'چهار' ;
+                            ELSIF S1 = 5 THEN STR1 := 'پنج' ;
+                            ELSIF S1 = 6 THEN STR1 := 'شش' ;
+                            ELSIF S1 = 7 THEN STR1 := 'هفت' ;
+                            ELSIF S1 = 8 THEN STR1 := 'هشت' ;
+                            ELSIF S1 = 9 THEN STR1 := 'نه' ;          
+                            END IF;       
+                V_RESULT := STR3 || V_GAP || STR1  ;  -- رقم دهگان برابر صفر باشد            
+                              
+                END IF;                                    
+            END IF;                                     
+END IF;         
+    RETURN V_RESULT ;
+END;
+/
